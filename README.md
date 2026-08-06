@@ -2,4 +2,8 @@
 
 _"Starts with Nginx, but goes beyond it."_
 
-[![nginxkit](./assets/nginxkit.png)](https://github.com/honego/docker-nginxkit)
+<div align="center">
+  <br />
+  <img width="90%" style="max-width: 90%" src="./assets/nginxkit.png" title="nginxkit" />
+  <br />
+</div>
