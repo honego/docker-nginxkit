@@ -1,78 +1,122 @@
-# syntax=docker/dockerfile:1
-# SPDX-License-Identifier: Apache-2.0
-#
-# Description: This dockerfile is used to add third-party modules to nginx and recompile the nginx web server.
+# SPDX-License-Identifier: BSD-2-Clause
 # Copyright (c) 2024-2026 honeok <i@honeok.com>
 
-ARG NGINX_VERSION=""
+FROM alpine:3.24.1@sha256:28bd5fe8b56d1bd048e5babf5b10710ebe0bae67db86916198a6eec434943f8b AS base
 
-FROM alpine:3.24.1@sha256:28bd5fe8b56d1bd048e5babf5b10710ebe0bae67db86916198a6eec434943f8b AS builder
-
-ARG NGINX_VERSION=""
-ARG GEOIP2_VERSION=""
-ARG ZSTD_VERSION=""
-ARG HEADERS_MORE_VERSION=""
-
-ARG NGX_DYNAMIC_MODULE_ARGS="\
-    --with-compat \
-    --with-stream \
-    --add-dynamic-module=../ngx_brotli \
-    --add-dynamic-module=../zstd-nginx-module \
-    --add-dynamic-module=../headers-more-nginx-module-${HEADERS_MORE_VERSION} \
-    --add-dynamic-module=../ngx_http_geoip2_module-${GEOIP2_VERSION} \
-    "
-
-RUN set -ex \
-    && apk add --update --no-cache --virtual .build-deps \
-        brotli-dev \
-        build-base \
-        curl \
-        git \
-        lz4-dev \
-        libmaxminddb-dev \
-        openssl-dev \
-        pcre2-dev \
-        xz-dev \
-        zlib-dev \
-    && cd /tmp \
-    && curl -Ls https://github.com/nginx/nginx/releases/download/release-${NGINX_VERSION}/nginx-${NGINX_VERSION}.tar.gz -o nginx-${NGINX_VERSION}.tar.gz \
-    && tar fxz nginx-${NGINX_VERSION}.tar.gz \
-    && git clone --recurse-submodules -j8 https://github.com/google/ngx_brotli \
-    && curl -Ls https://github.com/facebook/zstd/releases/download/v${ZSTD_VERSION}/zstd-${ZSTD_VERSION}.tar.gz -o zstd-${ZSTD_VERSION}.tar.gz \
-    && tar fxz zstd-${ZSTD_VERSION}.tar.gz \
-    && cd zstd-${ZSTD_VERSION} \
-    && make clean \
-    && CFLAGS="-fPIC" make -j$(getconf _NPROCESSORS_ONLN) \
-    && make -j$(getconf _NPROCESSORS_ONLN) install \
-    && cd /tmp \
-    && git clone --depth=10 https://github.com/tokers/zstd-nginx-module.git \
-    && curl -Ls https://github.com/openresty/headers-more-nginx-module/archive/v${HEADERS_MORE_VERSION}.tar.gz -o headers-more-${HEADERS_MORE_VERSION}.tar.gz \
-    && tar fxz headers-more-${HEADERS_MORE_VERSION}.tar.gz \
-    && curl -Ls https://github.com/leev/ngx_http_geoip2_module/archive/${GEOIP2_VERSION}.tar.gz -o geoip2-${GEOIP2_VERSION}.tar.gz \
-    && tar fxz geoip2-${GEOIP2_VERSION}.tar.gz \
-    && cd nginx-${NGINX_VERSION} \
-    && eval ./configure ${NGX_DYNAMIC_MODULE_ARGS} \
-    && make modules \
-    && strip --strip-unneeded objs/*.so \
-    && apk del --no-network .build-deps \
-    && rm -rf /var/cache/apk/*
-
-FROM nginx:${NGINX_VERSION}-alpine AS dist
+FROM base AS dist
 
 LABEL org.opencontainers.image.authors="honeok <i@honeok.com>"
 
-ARG NGINX_VERSION=""
+## nginx version.
+ARG NGX_VERSION=1.31.3
+ENV NGX_VERSION=$NGX_VERSION
 
-COPY --from=builder /tmp/nginx-${NGINX_VERSION}/objs/*.so /usr/lib/nginx/modules/
+# https://github.com/leev/ngx_http_geoip2_module
+ARG NGX_GEOIP2_VERSION=3.4
+ENV NGX_GEOIP2_VERSION=$NGX_GEOIP2_VERSION
+
+# https://github.com/openresty/headers-more-nginx-module
+ARG HEADERS_MORE_VERSION=0.40
+ENV HEADERS_MORE_VERSION=$HEADERS_MORE_VERSION
+
+# https://github.com/facebook/zstd
+ARG NGX_ZSTD_VERSION=1.5.7
+ENV NGX_ZSTD_VERSION=$NGX_ZSTD_VERSION
+
+# https://github.com/nginx/pkg-oss/blob/master/alpine/Makefile
+# parameter order follows `./configure --help`.
+ARG NGX_CONFIG_OPTIONS="\
+    --prefix=/etc/nginx \
+    --sbin-path=/usr/sbin/nginx \
+    --modules-path=/usr/lib/nginx/modules \
+    --conf-path=/etc/nginx/nginx.conf \
+    --error-log-path=/var/log/nginx/error.log \
+    --pid-path=/run/nginx.pid \
+    --lock-path=/run/nginx.lock \
+    --user=nginx \
+    --group=nginx \
+    --without-select_module \
+    --without-poll_module \
+    --with-threads \
+    --with-file-aio \
+    --with-http_ssl_module \
+    --with-http_v2_module \
+    --with-http_v3_module \
+    --with-http_realip_module \
+    --with-http_addition_module \
+    --with-http_sub_module \
+    --with-http_dav_module \
+    `#--with-http_flv_module` \
+    --with-http_mp4_module \
+    --with-http_gunzip_module \
+    --with-http_gzip_static_module \
+    --with-http_auth_request_module \
+    --with-http_random_index_module \
+    --with-http_secure_link_module \
+    `# --with-http_degradation_module` \
+    --with-http_slice_module \
+    --with-http_stub_status_module \
+    --http-log-path=/var/log/nginx/access.log \
+    --http-client-body-temp-path=/var/cache/nginx/client_temp \
+    --http-proxy-temp-path=/var/cache/nginx/proxy_temp \
+    --http-fastcgi-temp-path=/var/cache/nginx/fastcgi_temp \
+    --http-uwsgi-temp-path=/var/cache/nginx/uwsgi_temp \
+    --http-scgi-temp-path=/var/cache/nginx/scgi_temp \
+    --with-mail \
+    --with-mail_ssl_module \
+    --with-stream \
+    --with-stream_ssl_module \
+    --with-stream_realip_module \
+    --with-stream_ssl_preread_module \
+    --with-compat \
+    "
+
+ARG NGX_ADD_CONFIG_OPTIONS="\
+    --add-module=../ngx_brotli \
+    --add-module=../ngx_http_geoip2_module-$NGX_GEOIP2_VERSION \
+    --add-module=../headers-more-nginx-module-$HEADERS_MORE_VERSION \
+    --add-module=../zstd-nginx-module \
+    "
+
+# https://github.com/nginx/pkg-oss/blob/master/alpine/alpine/APKBUILD-base.in
+ARG NGX_CONFIG_DEPS="\
+    --with-cc-opt='-Os -fstack-clash-protection -Wformat -Werror=format-security -fno-plt -g' \
+    --with-ld-opt='-Wl,--as-needed,-O1,--sort-common -Wl,-z,pack-relative-relocs' \
+    "
 
 RUN set -ex \
-    && find /usr/lib/nginx/modules/ -type f -name '*-debug.so' -delete \
-    && runDeps="$( \
-        scanelf --needed --nobanner --format '%n#p' \
-            /usr/sbin/nginx \
-            /usr/lib/nginx/modules/*.so \
-        | tr ',' '\n' \
-        | sort -u \
-        | awk 'system("[ -e /usr/local/lib/" $1 " ]") == 0 { next } { print "so:" $1 }' \
-    )" \
-    && apk add --no-cache --virtual .runDeps ${runDeps}
+    && addgroup -g 101 -S nginx \
+    && adduser -S -D -H -u 101 -h /var/cache/nginx -s /sbin/nologin -G nginx -g nginx nginx \
+    && apk add --no-cache --virtual .build-deps \
+        brotli-dev \
+        build-base \
+        git \
+        libmaxminddb-dev \
+        linux-headers \
+        openssl-dev \
+        pcre2-dev \
+        tar \
+        zlib-dev \
+    && apk add --no-cache \
+        curl \
+        gettext-envsubst \
+        tzdata \
+    && cd /tmp \
+##############################
+# Install third-party modules.
+    && git clone --recurse-submodules -j8 https://github.com/google/ngx_brotli \
+    && curl -fsSL https://github.com/leev/ngx_http_geoip2_module/archive/$NGX_GEOIP2_VERSION.tar.gz | tar fxz - \
+    && curl -fsSL https://github.com/openresty/headers-more-nginx-module/archive/v$HEADERS_MORE_VERSION.tar.gz | tar fxz - \
+    && curl -fsSL https://github.com/facebook/zstd/releases/download/v$NGX_ZSTD_VERSION/zstd-$NGX_ZSTD_VERSION.tar.gz | tar fxz - \
+    && make -j$(getconf _NPROCESSORS_ONLN) -C zstd-$NGX_ZSTD_VERSION/lib \
+        MOREFLAGS="-fPIC" libzstd.a \
+    && export ZSTD_INC="/tmp/zstd-$NGX_ZSTD_VERSION/lib" \
+    && export ZSTD_LIB="/tmp/zstd-$NGX_ZSTD_VERSION/lib" \
+    && git clone --depth=10 https://github.com/tokers/zstd-nginx-module.git \
+##############################
+# Build nginx.
+    && curl -fsSL https://nginx.org/download/nginx-$NGX_VERSION.tar.gz | tar fxz - \
+    && cd nginx-$NGX_VERSION \
+    && eval ./configure $NGX_CONFIG_OPTIONS $NGX_ADD_CONFIG_OPTIONS $NGX_CONFIG_DEPS \
+    && make -j$(getconf _NPROCESSORS_ONLN) \
+    && make install
