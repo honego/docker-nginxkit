@@ -51,7 +51,7 @@ jobs:
         working-directory: ${{ env.WORK_DIR }}
         shell: bash
         run: |
-          dpkg --print-architecture || uname -m
+          dpkg --print-architecture 2>/dev/null || uname -m
 
           set -euxo pipefail
           docker build \
