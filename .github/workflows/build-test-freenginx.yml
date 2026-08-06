@@ -55,6 +55,14 @@ jobs:
           dpkg --print-architecture 2>/dev/null || uname -m
 
           set -euxo pipefail
+          curl -fsSL -O https://github.com/nginx/pkg-oss/raw/master/alpine/alpine/nginx.conf
+          curl -fsSL -O https://github.com/nginx/pkg-oss/raw/master/alpine/alpine/nginx.default.conf
+          curl -fsSL -O https://github.com/nginx/docker-nginx/raw/master/entrypoint/docker-entrypoint.sh
+          curl -fsSL -O https://github.com/nginx/docker-nginx/raw/master/entrypoint/10-listen-on-ipv6-by-default.sh
+          curl -fsSL -O https://github.com/nginx/docker-nginx/raw/master/entrypoint/15-local-resolvers.envsh
+          curl -fsSL -O https://github.com/nginx/docker-nginx/raw/master/entrypoint/20-envsubst-on-templates.sh
+          curl -fsSL -O https://github.com/nginx/docker-nginx/raw/master/entrypoint/30-tune-worker-processes.sh
+
           docker build \
             --no-cache \
             --progress=plain \
