@@ -16,19 +16,19 @@ FROM base AS dist
 LABEL org.opencontainers.image.authors="honeok <i@honeok.com>"
 
 ## nginx version.
-ARG NGX_VERSION=1.31.3
+ARG NGX_VERSION=
 ENV NGX_VERSION=$NGX_VERSION
 
 # https://github.com/leev/ngx_http_geoip2_module
-ARG NGX_GEOIP2_VERSION=3.4
+ARG NGX_GEOIP2_VERSION=
 ENV NGX_GEOIP2_VERSION=$NGX_GEOIP2_VERSION
 
 # https://github.com/openresty/headers-more-nginx-module
-ARG HEADERS_MORE_VERSION=0.40
+ARG HEADERS_MORE_VERSION=
 ENV HEADERS_MORE_VERSION=$HEADERS_MORE_VERSION
 
 # https://github.com/facebook/zstd
-ARG NGX_ZSTD_VERSION=1.5.7
+ARG NGX_ZSTD_VERSION=
 ENV NGX_ZSTD_VERSION=$NGX_ZSTD_VERSION
 
 # https://github.com/nginx/pkg-oss/blob/master/alpine/Makefile
