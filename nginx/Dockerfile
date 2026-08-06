@@ -11,6 +11,7 @@ LABEL org.opencontainers.image.authors="honeok <i@honeok.com>"
 ARG NGX_VERSION=1.31.3
 ENV NGX_VERSION=$NGX_VERSION
 
+## third-party modules.
 # https://github.com/leev/ngx_http_geoip2_module
 ARG NGX_GEOIP2_VERSION=3.4
 ENV NGX_GEOIP2_VERSION=$NGX_GEOIP2_VERSION
