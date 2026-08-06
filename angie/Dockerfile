@@ -147,8 +147,9 @@ RUN set -ex \
 # create a docker-entrypoint.d directory
     && mkdir /docker-entrypoint.d \
     && rundeps="$( \
-        scanelf --needed --nobanner --format '%n#p' \
+        scanelf --nobanner --recursive --format '%n#p' \
             /usr/sbin/angie \
+            /usr/lib/angie/modules \
         | tr ',' '\n' \
         | sort -u \
         | sed '/^$/d; s/^/so:/' \
