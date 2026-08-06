@@ -113,7 +113,7 @@ RUN set -ex \
     && cd /tmp \
 ##############################
 # Install third-party modules.
-    && git clone --recurse-submodules -j$(getconf _NPROCESSORS_ONLN) https://github.com/google/ngx_brotli \
+    && git clone --recurse-submodules -j8 https://github.com/google/ngx_brotli \
     && curl -fsSL https://github.com/leev/ngx_http_geoip2_module/archive/$NGX_GEOIP2_VERSION.tar.gz | tar fxz - \
     && curl -fsSL https://github.com/openresty/headers-more-nginx-module/archive/v$HEADERS_MORE_VERSION.tar.gz | tar fxz - \
 # https://github.com/facebook/zstd/blob/dev/lib/libzstd.mk
