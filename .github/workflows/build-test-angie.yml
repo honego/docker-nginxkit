@@ -24,13 +24,13 @@ env:
 
 jobs:
   build:
-    name: "Build ${{ matrix.arch }}"
+    name: "Build test image"
     strategy:
       fail-fast: false
       matrix:
         include:
-          - { os: ubuntu-24.04, platform: linux/amd64, arch: amd64 }
-          - { os: ubuntu-24.04-arm, platform: linux/arm64, arch: arm64 }
+          - { os: ubuntu-24.04, platform: linux/amd64 }
+          - { os: ubuntu-24.04-arm, platform: linux/arm64 }
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -57,10 +57,10 @@ jobs:
             --build-arg NGX_GEOIP2_VERSION=$NGX_GEOIP2_VERSION \
             --build-arg HEADERS_MORE_VERSION=$HEADERS_MORE_VERSION \
             --build-arg NGX_ZSTD_VERSION=$NGX_ZSTD_VERSION \
-            --tag $GITHUB_REPOSITORY_OWNER/angie:$ANGIE_VERSION-${{ matrix.arch }} \
+            --tag $GITHUB_REPOSITORY_OWNER/angie:$ANGIE_VERSION-$(dpkg --print-architecture) \
             . 2>&1 | tee build.log
 
           docker run --rm \
             --entrypoint angie \
-            $GITHUB_REPOSITORY_OWNER/angie:$ANGIE_VERSION-${{ matrix.arch }} \
+            $GITHUB_REPOSITORY_OWNER/angie:$ANGIE_VERSION-$(dpkg --print-architecture) \
             -V
