@@ -250,10 +250,16 @@ RUN set -ex \
 ENV PATH=$PATH:/usr/local/openresty/bin:/usr/local/openresty/luajit/bin
 
 # Copy nginx configuration files.
+# https://github.com/nginx/pkg-oss/blob/master/alpine/alpine
 COPY nginx.conf /etc/nginx/nginx.conf
 COPY nginx.vh.default.conf /etc/nginx/conf.d/default.conf
 
+# https://github.com/nginx/docker-nginx/tree/master/entrypoint
 COPY --chmod=755 docker-entrypoint.sh /
+COPY --chmod=755 10-listen-on-ipv6-by-default.sh /docker-entrypoint.d
+COPY --chmod=755 15-local-resolvers.envsh /docker-entrypoint.d
+COPY --chmod=755 20-envsubst-on-templates.sh /docker-entrypoint.d
+COPY --chmod=755 30-tune-worker-processes.sh /docker-entrypoint.d
 ENTRYPOINT ["/docker-entrypoint.sh"]
 
 EXPOSE 80
