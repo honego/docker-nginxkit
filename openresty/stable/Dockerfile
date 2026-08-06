@@ -55,14 +55,12 @@ ARG RESTY_CONFIG_OPTIONS="\
     --with-http_addition_module \
     --with-http_sub_module \
     --with-http_dav_module \
-    --with-http_flv_module \
     --with-http_mp4_module \
     --with-http_gunzip_module \
     --with-http_gzip_static_module \
     --with-http_auth_request_module \
     --with-http_random_index_module \
     --with-http_secure_link_module \
-    --with-http_degradation_module \
     --with-http_slice_module \
     --with-http_stub_status_module \
     --http-log-path=/var/log/openresty/access.log \
@@ -75,8 +73,6 @@ ARG RESTY_CONFIG_OPTIONS="\
     --with-stream_realip_module \
     --with-stream_ssl_preread_module \
     `# openresty specific options.` \
-    --without-http_rds_json_module \
-    --without-http_rds_csv_module \
     --without-lua_rds_parser \
     "
 
@@ -159,6 +155,7 @@ RUN set -ex \
     && cd /tmp \
     && curl -fsSL https://openresty.org/download/openresty-$RESTY_VERSION.tar.gz | tar fxz - \
     && cd openresty-$RESTY_VERSION \
+    && curl -fsSL https://github.com/honego/docker-nginxkit/raw/main/openresty/patches/remove-legacy-modules.patch | patch -p1 \
     && eval ./configure -j$(getconf _NPROCESSORS_ONLN) $RESTY_CONFIG_OPTIONS $RESTY_LUAJIT_OPTIONS $RESTY_PCRE_OPTIONS $RESTY_CONFIG_DEPS \
     && make -j$(getconf _NPROCESSORS_ONLN) \
     && make install \
