@@ -1,0 +1,6 @@
+* text=auto eol=lf
+
+angie/**/*.conf linguist-language=Nginx
+freenginx/**/*.conf linguist-language=Nginx
+nginx/**/*.conf linguist-language=Nginx
+openresty/**/*.conf linguist-language=Nginx
