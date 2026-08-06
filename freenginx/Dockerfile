@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: BSD-2-Clause
 # Copyright (c) 2026 honeok <i@honeok.com>
 
-# References:
+# Список литературы:
 # https://freenginx.org/en/docs/configure.html
 # https://github.com/nginx/docker-nginx
 
