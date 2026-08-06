@@ -119,7 +119,7 @@ RUN set -ex \
 ##############################
 # Build zlib.
     && cd /tmp \
-    && curl -fsSL https://github.com/madler/zlib/releases/download/v$RESTY_ZLIB_VERSION/zlib-$RESTY_ZLIB_VERSION.tar.gz | tar fxz - \
+    && curl -fsSL https://www.zlib.net/fossils/zlib-$RESTY_ZLIB_VERSION.tar.gz | tar fxz - \
     && cd zlib-$RESTY_ZLIB_VERSION \
     && ./configure \
         --prefix=/usr/local/openresty/zlib \
