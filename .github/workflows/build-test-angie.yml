@@ -44,6 +44,7 @@ jobs:
         run: |
           set -euxo pipefail
 
+          dpkg --print-architecture || uname -m
           ANGIE_VERSION=$(gh api --paginate repos/webserver-llc/angie/tags --jq '.[].name' | sed -n 's/^Angie-//p' | sort -V | tail -n 1)
           NGX_GEOIP2_VERSION=$(gh api --paginate repos/leev/ngx_http_geoip2_module/tags --jq '.[].name' | sort -V | tail -n 1)
           HEADERS_MORE_VERSION=$(gh api --paginate repos/openresty/headers-more-nginx-module/tags --jq '.[].name | sub("^v"; "")' | sort -V | tail -n 1)
