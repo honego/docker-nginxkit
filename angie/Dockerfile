@@ -52,7 +52,7 @@ ARG ANGIE_BUILD_OPTIONS="\
     --with-http_addition_module \
     --with-http_sub_module \
     --with-http_dav_module \
-    --with-http_flv_module \
+    `#--with-http_flv_module` \
     --with-http_mp4_module \
     --with-http_gunzip_module \
     --with-http_gzip_static_module \
@@ -76,6 +76,7 @@ ARG ANGIE_BUILD_OPTIONS="\
     --with-stream_ssl_preread_module \
     --with-stream_mqtt_preread_module \
     --with-stream_rdp_preread_module \
+    --with-compat \
     "
 
 ARG ANGIE_BUILD_DEPS="\
@@ -129,6 +130,7 @@ RUN set -ex \
     && eval ./configure $ANGIE_BUILD_OPTIONS $ANGIE_BUILD_DEPS $ANGIE_ADD_BUILD_OPTIONS \
     && make -j$(getconf _NPROCESSORS_ONLN) \
     && make install \
+##############################
 # https://github.com/nginx/pkg-oss/blob/master/alpine/alpine/APKBUILD-base.in
     && mkdir -p \
         /var/cache/angie \
