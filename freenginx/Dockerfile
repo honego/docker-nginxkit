@@ -124,6 +124,7 @@ RUN set -ex \
     && eval ./configure $NGX_CONFIG_OPTIONS $NGX_ADD_CONFIG_OPTIONS $NGX_CONFIG_DEPS \
     && make -j$(getconf _NPROCESSORS_ONLN) \
     && make install \
+##############################
 # https://github.com/nginx/pkg-oss/blob/master/alpine/alpine/APKBUILD-base.in
     && mkdir -p \
         /var/cache/nginx \
