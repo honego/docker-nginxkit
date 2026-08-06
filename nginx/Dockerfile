@@ -120,4 +120,54 @@ RUN set -ex \
     && cd nginx-$NGX_VERSION \
     && eval ./configure $NGX_CONFIG_OPTIONS $NGX_ADD_CONFIG_OPTIONS $NGX_CONFIG_DEPS \
     && make -j$(getconf _NPROCESSORS_ONLN) \
-    && make install
+    && make install \
+##############################
+# https://github.com/nginx/pkg-oss/blob/master/alpine/alpine/APKBUILD-base.in
+    && mkdir -p \
+        /var/cache/nginx \
+        /usr/share/nginx \
+        /usr/lib/nginx/modules \
+    && mv /etc/nginx/html /usr/share/nginx \
+    && ln -sf /usr/lib/nginx/modules /etc/nginx/modules \
+    && rm -rf /etc/nginx/*.default \
+    && rm -f \
+        /etc/nginx/koi-utf \
+        /etc/nginx/koi-win \
+        /etc/nginx/win-utf \
+# forward request and error logs to docker log collector
+    && ln -sf /dev/stdout /var/log/nginx/access.log \
+    && ln -sf /dev/stderr /var/log/nginx/error.log \
+# create a docker-entrypoint.d directory
+    && mkdir /docker-entrypoint.d \
+    && runDeps="$( \
+        scanelf --nobanner --recursive --format '%n#p' \
+            /usr/sbin/nginx \
+            /usr/lib/nginx/modules \
+        | tr ',' '\n' \
+        | sort -u \
+        | sed '/^$/d; s/^/so:/' \
+    )" \
+    && apk add --no-network --virtual .runDeps $runDeps \
+    && apk del --no-network .build-deps \
+    && rm -rf /var/cache/apk/* /tmp/*
+
+# Copy nginx configuration files.
+# https://github.com/nginx/pkg-oss/blob/master/alpine/alpine
+COPY nginx.conf /etc/nginx/nginx.conf
+COPY nginx.default.conf /etc/nginx/conf.d/default.conf
+
+# https://github.com/nginx/docker-nginx/tree/master/entrypoint
+COPY --chmod=755 docker-entrypoint.sh /
+COPY --chmod=755 10-listen-on-ipv6-by-default.sh /docker-entrypoint.d
+COPY --chmod=755 15-local-resolvers.envsh /docker-entrypoint.d
+COPY --chmod=755 20-envsubst-on-templates.sh /docker-entrypoint.d
+COPY --chmod=755 30-tune-worker-processes.sh /docker-entrypoint.d
+ENTRYPOINT ["/docker-entrypoint.sh"]
+
+EXPOSE 80
+
+# Use SIGQUIT instead of default SIGTERM to cleanly drain requests.
+# See https://github.com/nginx/docker-nginx/issues/377
+STOPSIGNAL SIGQUIT
+
+CMD ["nginx", "-g", "daemon off;"]
