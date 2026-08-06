@@ -1,6 +1,10 @@
 #!/usr/bin/env sh
-# vim:sw=4:ts=4:et
 # SPDX-License-Identifier: BSD-2-Clause
+#
+# Copyright (c) 2011-2026 Nginx, Inc.
+# Copyright (c) 2025-2026 honeok <i@honeok.com>
+#
+# Based on the NGINX Docker entrypoint script, modified for OpenResty.
 
 set -e
 
@@ -12,11 +16,11 @@ entrypoint_log() {
 
 if [ "$1" = "nginx" ] || [ "$1" = "openresty" ]; then
     # shellcheck disable=SC2034,SC2162
-    if /usr/bin/find "/docker-entrypoint.d/" -mindepth 1 -maxdepth 1 -type f -print -quit 2> /dev/null | read v; then
-        entrypoint_log "$0: /docker-entrypoint.d/ is not empty, will attempt to perform configuration"
+    if find "/docker-entrypoint.d" -mindepth 1 -maxdepth 1 -type f -print -quit 2> /dev/null | read v; then
+        entrypoint_log "$0: /docker-entrypoint.d is not empty, will attempt to perform configuration"
 
         entrypoint_log "$0: Looking for shell scripts in /docker-entrypoint.d/"
-        /usr/bin/find "/docker-entrypoint.d/" -follow -type f -print | sort -V | while read -r f; do
+        find "/docker-entrypoint.d" -follow -type f -print | sort -V | while read -r f; do
             case "$f" in
             *.envsh)
                 if [ -x "$f" ]; then
@@ -42,9 +46,10 @@ if [ "$1" = "nginx" ] || [ "$1" = "openresty" ]; then
                 ;;
             esac
         done
+
         entrypoint_log "$0: Configuration complete; ready for start up"
     else
-        entrypoint_log "$0: No files found in /docker-entrypoint.d/, skipping configuration"
+        entrypoint_log "$0: No files found in /docker-entrypoint.d, skipping configuration"
     fi
 fi
 

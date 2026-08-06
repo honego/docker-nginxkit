@@ -41,7 +41,9 @@ if [ "$1" = "nginx" ] || [ "$1" = "angie" ]; then
                     entrypoint_log "$0: Ignoring $f, not executable"
                 fi
                 ;;
-            *) entrypoint_log "$0: Ignoring $f" ;;
+            *)
+                entrypoint_log "$0: Ignoring $f"
+                ;;
             esac
         done
 
