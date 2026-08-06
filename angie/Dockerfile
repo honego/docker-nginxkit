@@ -132,6 +132,7 @@ RUN set -ex \
 # https://github.com/nginx/pkg-oss/blob/master/alpine/alpine/APKBUILD-base.in
     && mkdir -p \
         /var/cache/angie \
+        /var/lib/angie \
         /usr/share/angie \
         /usr/lib/angie/modules \
     && mv /etc/angie/html /usr/share/angie \
