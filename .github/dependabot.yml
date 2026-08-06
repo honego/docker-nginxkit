@@ -21,6 +21,7 @@ updates:
     directories:
       - "/angie"
       - "/freenginx"
+      - "/nginx"
       - "/openresty/edge"
       - "/openresty/luarocks"
       - "/openresty/stable"
