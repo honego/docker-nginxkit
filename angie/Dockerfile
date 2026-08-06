@@ -146,7 +146,7 @@ RUN set -ex \
     && ln -sf /dev/stderr /var/log/angie/error.log \
 # create a docker-entrypoint.d directory
     && mkdir /docker-entrypoint.d \
-    && rundeps="$( \
+    && runDeps="$( \
         scanelf --nobanner --recursive --format '%n#p' \
             /usr/sbin/angie \
             /usr/lib/angie/modules \
@@ -154,7 +154,7 @@ RUN set -ex \
         | sort -u \
         | sed '/^$/d; s/^/so:/' \
     )" \
-    && apk add --no-cache --virtual .rundeps $rundeps \
+    && apk add --no-network --virtual .runDeps $runDeps \
     && apk del --no-network .build-deps \
     && rm -rf /var/cache/apk/* /tmp/*
 
