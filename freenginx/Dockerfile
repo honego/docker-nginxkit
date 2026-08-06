@@ -144,12 +144,12 @@ RUN set -ex \
 # create a docker-entrypoint.d directory
     && mkdir /docker-entrypoint.d \
     && runDeps="$( \
-        scanelf --needed --nobanner --format '%n#p' \
+        scanelf --nobanner --recursive --format '%n#p' \
             /usr/sbin/nginx \
-            /usr/lib/nginx/modules/*.so \
+            /usr/lib/nginx/modules \
         | tr ',' '\n' \
         | sort -u \
-        | awk 'system("[ -e /usr/local/lib/" $1 " ]") == 0 { next } { print "so:" $1 }' \
+        | sed '/^$/d; s/^/so:/' \
     )" \
     && apk add --no-network --virtual .runDeps $runDeps \
     && apk del --no-network .build-deps \
