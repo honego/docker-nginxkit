@@ -95,7 +95,6 @@ RUN set -ex \
     && apk add --no-cache --virtual .build-deps \
         brotli-dev \
         build-base \
-        curl \
         git \
         libmaxminddb-dev \
         lz4-dev \
