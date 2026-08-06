@@ -60,10 +60,10 @@ jobs:
             --build-arg NGX_GEOIP2_VERSION=${{ env.NGX_GEOIP2_VERSION }} \
             --build-arg HEADERS_MORE_VERSION=${{ env.HEADERS_MORE_VERSION }} \
             --build-arg NGX_ZSTD_VERSION=${{ env.NGX_ZSTD_VERSION }} \
-            --tag $GITHUB_REPOSITORY_OWNER/angie:$ANGIE_VERSION-$(dpkg --print-architecture) \
+            --tag $GITHUB_REPOSITORY_OWNER/angie:${{ env.ANGIE_VERSION }}-$(dpkg --print-architecture) \
             . 2>&1 | tee build.log
 
           docker run --rm \
             --entrypoint angie \
-            $GITHUB_REPOSITORY_OWNER/angie:$ANGIE_VERSION-$(dpkg --print-architecture) \
+            $GITHUB_REPOSITORY_OWNER/angie:${{ env.ANGIE_VERSION }}-$(dpkg --print-architecture) \
             -V
