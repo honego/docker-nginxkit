@@ -82,9 +82,9 @@ ARG NGX_ADD_CONFIG_OPTIONS="\
     --add-module=../zstd-nginx-module \
     "
 
-# https://sourceware.org/binutils/docs/ld/Options.html
+# https://github.com/nginx/pkg-oss/blob/master/alpine/alpine/APKBUILD-base.in
 ARG NGX_CONFIG_DEPS="\
-    --with-cc-opt='-Os -fstack-clash-protection -Wformat -Werror=format-security -g' \
+    --with-cc-opt='-Os -fstack-clash-protection -Wformat -Werror=format-security' \
     --with-ld-opt='-Wl,--as-needed,-O1,--sort-common -Wl,-z,relro -Wl,-z,now' \
     "
 
