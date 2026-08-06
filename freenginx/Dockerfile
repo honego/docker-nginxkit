@@ -96,7 +96,6 @@ RUN set -ex \
         build-base \
         git \
         libmaxminddb-dev \
-        lz4-dev \
         linux-headers \
         openssl-dev \
         pcre2-dev \
