@@ -110,8 +110,9 @@ RUN set -ex \
         gettext-envsubst \
         tzdata \
     && cd /tmp \
-# install third-party modules.
-    && git clone --recurse-submodules -j8 https://github.com/google/ngx_brotli \
+##############################
+# Install third-party modules.
+    && git clone --recurse-submodules -j$(getconf _NPROCESSORS_ONLN) https://github.com/google/ngx_brotli \
     && curl -fsSL https://github.com/leev/ngx_http_geoip2_module/archive/$NGX_GEOIP2_VERSION.tar.gz | tar fxz - \
     && curl -fsSL https://github.com/openresty/headers-more-nginx-module/archive/v$HEADERS_MORE_VERSION.tar.gz | tar fxz - \
 # https://github.com/facebook/zstd/blob/dev/lib/libzstd.mk
@@ -121,12 +122,13 @@ RUN set -ex \
     && export ZSTD_INC="/tmp/zstd-$NGX_ZSTD_VERSION/lib" \
     && export ZSTD_LIB="/tmp/zstd-$NGX_ZSTD_VERSION/lib" \
     && git clone --depth=10 https://github.com/tokers/zstd-nginx-module.git \
-# run build.
+##############################
+# Build angie.
     && curl -fsSL https://github.com/webserver-llc/angie/archive/Angie-$ANGIE_VERSION.tar.gz | tar xz --strip-components=1 --one-top-level="angie-$ANGIE_VERSION" \
     && cd angie-$ANGIE_VERSION \
     && eval ./configure $ANGIE_BUILD_OPTIONS $ANGIE_BUILD_DEPS $ANGIE_ADD_BUILD_OPTIONS \
     && make -j$(getconf _NPROCESSORS_ONLN) \
-    && make -j$(getconf _NPROCESSORS_ONLN) install \
+    && make install \
 # https://github.com/nginx/pkg-oss/blob/master/alpine/alpine/APKBUILD-base.in
     && mkdir -p \
         /var/cache/angie \
