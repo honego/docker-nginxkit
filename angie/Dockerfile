@@ -161,8 +161,8 @@ RUN set -ex \
 # Copy nginx configuration files.
 # https://github.com/nginx/pkg-oss/blob/master/alpine/alpine
 COPY angie.conf /etc/angie/angie.conf
-COPY default.conf /etc/angie/conf.d/default.conf
-COPY stream.conf /etc/angie/stream.d/example.conf
+COPY angie.vhost.default.conf /etc/angie/conf.d/default.conf
+COPY angie.stream.example.conf /etc/angie/stream.d/example.conf
 
 # https://github.com/nginx/docker-nginx/tree/master/entrypoint
 COPY --chmod=755 docker-entrypoint.sh /
