@@ -1,7 +1,7 @@
-diff --git a/util/configure b/util/configure
+diff --git a/configure b/configure
 index 5f8a119..8a6a99a 100755
---- a/util/configure
-+++ b/util/configure
+--- a/configure
++++ b/configure
 @@ -69,27 +69,27 @@ if ($OS =~ /solaris|sunos/i) {
  
  my @modules = (
