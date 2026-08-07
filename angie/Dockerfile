@@ -80,7 +80,7 @@ ARG ANGIE_BUILD_OPTIONS="\
     "
 
 ARG ANGIE_BUILD_DEPS="\
-    --with-ld-opt='-Wl,--as-needed,-O1,--sort-common -Wl,-z,pack-relative-relocs -Wl,-z,relro -Wl,-z,now' \
+    --with-ld-opt='-Wl,--as-needed,-O1,--sort-common -Wl,-z,pack-relative-relocs' \
     "
 
 ARG ANGIE_ADD_BUILD_OPTIONS="\
