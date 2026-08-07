@@ -69,6 +69,7 @@ jobs:
             --build-arg NGX_VERSION=${{ env.NGX_VERSION }} \
             --build-arg HEADERS_MORE_VERSION=${{ env.HEADERS_MORE_VERSION }} \
             --build-arg NGX_ZSTD_VERSION=${{ env.NGX_ZSTD_VERSION }} \
+            --build-arg NGX_STRIP_BINARIES=1 \
             --tag $GITHUB_REPOSITORY_OWNER/freenginx:${{ env.NGX_VERSION }}-$(dpkg --print-architecture) \
             . 2>&1 | tee build.log
 
