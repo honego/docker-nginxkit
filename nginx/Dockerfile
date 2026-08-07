@@ -81,7 +81,7 @@ ARG NGX_ADD_MODULE_OPTIONS="\
 
 # https://github.com/nginx/pkg-oss/blob/master/alpine/alpine/APKBUILD-base.in
 ARG NGX_TOOLCHAIN_OPTIONS="\
-    --with-cc-opt='-Os -fstack-clash-protection -Wformat -Werror=format-security -fno-plt -g' \
+    --with-cc-opt='-Os -fstack-clash-protection -Wformat -Werror=format-security' \
     --with-ld-opt='-Wl,--as-needed,-O1,--sort-common -Wl,-z,pack-relative-relocs' \
     "
 
