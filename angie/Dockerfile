@@ -11,11 +11,11 @@ FROM base AS dist
 
 LABEL org.opencontainers.image.authors="honeok <i@honeok.com>"
 
-## angie
+## angie version.
 ARG ANGIE_VERSION=
 ENV ANGIE_VERSION=$ANGIE_VERSION
 
-## angie modules
+## third-party modules.
 # https://cn.angie.software/angie/docs/installation/external-modules
 
 # https://github.com/leev/ngx_http_geoip2_module
