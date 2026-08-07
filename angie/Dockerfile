@@ -90,6 +90,8 @@ ARG ANGIE_ADD_BUILD_OPTIONS="\
     --add-module=../zstd-nginx-module \
     "
 
+ARG ANGIE_STRIP_BINARIES=
+
 RUN set -ex \
     && addgroup -g 101 -S angie \
     && adduser -S -D -H -u 101 -h /var/cache/angie -s /sbin/nologin -G angie -g angie angie \
@@ -148,6 +150,20 @@ RUN set -ex \
     && ln -sf /dev/stderr /var/log/angie/error.log \
 # create a docker-entrypoint.d directory
     && mkdir /docker-entrypoint.d \
+##############################
+# strip installed ELF executables and shared objects.
+# https://gitlab.alpinelinux.org/alpine/abuild/-/blob/master/abuild.in
+    && if [ -n "$ANGIE_STRIP_BINARIES" ]; then \
+        scanelf --recursive --nobanner --osabi --etype 'ET_DYN,ET_EXEC' \
+            /usr/sbin/angie \
+            /usr/lib/angie/modules \
+        | while read -r type osabi filename; do \
+            [ -e "$filename" ] || continue; \
+            [ "$osabi" != "STANDALONE" ] || continue; \
+            strip --strip-unneeded "$filename" || exit 1; \
+        done; \
+    fi \
+##############################
     && runDeps="$( \
         scanelf --nobanner --recursive --format '%n#p' \
             /usr/sbin/angie \
