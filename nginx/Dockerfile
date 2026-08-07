@@ -3,6 +3,44 @@
 
 FROM alpine:3.24.1@sha256:28bd5fe8b56d1bd048e5babf5b10710ebe0bae67db86916198a6eec434943f8b AS base
 
+FROM base AS build
+
+## nginx version.
+ARG NGX_VERSION=
+ENV NGX_VERSION=$NGX_VERSION
+
+## dynamic modules.
+ARG NGX_ACME_VERSION=
+ENV NGX_ACME_VERSION=$NGX_ACME_VERSION
+
+ARG NGX_ADD_DYNAMIC_MODULE_OPTIONS="\
+    --with-http_ssl_module \
+    --with-stream \
+    --add-dynamic-module=../nginx-acme-$NGX_ACME_VERSION \
+    --with-compat \
+    "
+
+RUN set -ex \
+    && apk add --no-cache --virtual .build-deps \
+        build-base \
+        cargo \
+        clang-dev \
+        curl \
+        openssl-dev \
+        pcre2-dev \
+        tar \
+    && cd /tmp \
+##############################
+# install dynamic modules.
+    && curl -fsSL https://github.com/nginx/nginx-acme/releases/download/v$NGX_ACME_VERSION/nginx-acme-$NGX_ACME_VERSION.tar.gz | tar fxz - \
+##############################
+# build.
+    && curl -fsSL https://github.com/nginx/nginx/releases/download/release-$NGX_VERSION/nginx-$NGX_VERSION.tar.gz | tar fxz - \
+    && cd nginx-$NGX_VERSION \
+    && eval ./configure $NGX_ADD_DYNAMIC_MODULE_OPTIONS \
+    && make -j$(getconf _NPROCESSORS_ONLN) \
+    && apk del --no-network .build-deps
+
 FROM base AS dist
 
 LABEL org.opencontainers.image.authors="honeok <i@honeok.com>"
@@ -86,6 +124,9 @@ ARG NGX_TOOLCHAIN_OPTIONS="\
     "
 
 ARG NGX_STRIP_BINARIES=
+
+# Copy prebuilt dynamic modules.
+COPY --from=build /tmp/nginx-$NGX_VERSION/objs/*.so /usr/lib/nginx/modules/
 
 RUN set -ex \
     && addgroup -g 101 -S nginx \
