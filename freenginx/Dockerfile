@@ -94,6 +94,7 @@ RUN set -ex \
     && apk add --no-cache --virtual .build-deps \
         brotli-dev \
         build-base \
+        geoip-dev \
         git \
         libmaxminddb-dev \
         linux-headers \
