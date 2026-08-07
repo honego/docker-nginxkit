@@ -164,8 +164,9 @@ RUN set -ex \
         done; \
     fi \
 ##############################
+# resolve runtime shared library deps.
     && runDeps="$( \
-        scanelf --nobanner --recursive --format '%n#p' \
+        scanelf --recursive --nobanner --needed --format '%n#p' \
             /usr/sbin/angie \
             /usr/lib/angie/modules \
         | tr ',' '\n' \
