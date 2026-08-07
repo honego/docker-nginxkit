@@ -8,25 +8,25 @@ FROM base AS dist
 LABEL org.opencontainers.image.authors="honeok <i@honeok.com>"
 
 ## nginx version.
-ARG NGX_VERSION=1.31.3
+ARG NGX_VERSION=
 ENV NGX_VERSION=$NGX_VERSION
 
 ## third-party modules.
 # https://github.com/leev/ngx_http_geoip2_module
-ARG NGX_GEOIP2_VERSION=3.4
+ARG NGX_GEOIP2_VERSION=
 ENV NGX_GEOIP2_VERSION=$NGX_GEOIP2_VERSION
 
 # https://github.com/openresty/headers-more-nginx-module
-ARG HEADERS_MORE_VERSION=0.40
+ARG HEADERS_MORE_VERSION=
 ENV HEADERS_MORE_VERSION=$HEADERS_MORE_VERSION
 
 # https://github.com/facebook/zstd
-ARG NGX_ZSTD_VERSION=1.5.7
+ARG NGX_ZSTD_VERSION=
 ENV NGX_ZSTD_VERSION=$NGX_ZSTD_VERSION
 
 # https://github.com/nginx/pkg-oss/blob/master/alpine/Makefile
 # parameter order follows `./configure --help`.
-ARG NGX_CONFIG_OPTIONS="\
+ARG NGX_CONFIGURE_OPTIONS="\
     --prefix=/etc/nginx \
     --sbin-path=/usr/sbin/nginx \
     --modules-path=/usr/lib/nginx/modules \
@@ -72,7 +72,7 @@ ARG NGX_CONFIG_OPTIONS="\
     --with-compat \
     "
 
-ARG NGX_ADD_CONFIG_OPTIONS="\
+ARG NGX_ADD_MODULE_OPTIONS="\
     --add-module=../ngx_brotli \
     --add-module=../ngx_http_geoip2_module-$NGX_GEOIP2_VERSION \
     --add-module=../headers-more-nginx-module-$HEADERS_MORE_VERSION \
@@ -80,7 +80,7 @@ ARG NGX_ADD_CONFIG_OPTIONS="\
     "
 
 # https://github.com/nginx/pkg-oss/blob/master/alpine/alpine/APKBUILD-base.in
-ARG NGX_CONFIG_DEPS="\
+ARG NGX_TOOLCHAIN_OPTIONS="\
     --with-cc-opt='-Os -fstack-clash-protection -Wformat -Werror=format-security -fno-plt -g' \
     --with-ld-opt='-Wl,--as-needed,-O1,--sort-common -Wl,-z,pack-relative-relocs' \
     "
@@ -118,7 +118,7 @@ RUN set -ex \
 # Build nginx.
     && curl -fsSL https://nginx.org/download/nginx-$NGX_VERSION.tar.gz | tar fxz - \
     && cd nginx-$NGX_VERSION \
-    && eval ./configure $NGX_CONFIG_OPTIONS $NGX_ADD_CONFIG_OPTIONS $NGX_CONFIG_DEPS \
+    && eval ./configure $NGX_CONFIGURE_OPTIONS $NGX_ADD_MODULE_OPTIONS $NGX_TOOLCHAIN_OPTIONS \
     && make -j$(getconf _NPROCESSORS_ONLN) \
     && make install \
 ##############################
