@@ -34,7 +34,7 @@ ENV NGX_ZSTD_VERSION=$NGX_ZSTD_VERSION
 
 # https://github.com/nginx/pkg-oss/blob/master/alpine/Makefile
 # parameter order follows `./configure --help`.
-ARG NGX_CONFIG_OPTIONS="\
+ARG NGX_CONFIGURE_OPTIONS="\
     --prefix=/etc/nginx \
     --sbin-path=/usr/sbin/nginx \
     --modules-path=/usr/lib/nginx/modules \
@@ -80,7 +80,7 @@ ARG NGX_CONFIG_OPTIONS="\
     --with-compat \
     "
 
-ARG NGX_ADD_CONFIG_OPTIONS="\
+ARG NGX_ADD_MODULE_OPTIONS="\
     --add-module=../ngx_brotli \
     --add-module=../ngx_http_geoip2_module-$NGX_GEOIP2_VERSION \
     --add-module=../headers-more-nginx-module-$HEADERS_MORE_VERSION \
@@ -88,7 +88,7 @@ ARG NGX_ADD_CONFIG_OPTIONS="\
     "
 
 # https://github.com/nginx/pkg-oss/blob/master/alpine/alpine/APKBUILD-base.in
-ARG NGX_CONFIG_DEPS="\
+ARG NGX_TOOLCHAIN_OPTIONS="\
     --with-cc-opt='-Os -fstack-clash-protection -Wformat -Werror=format-security' \
     --with-ld-opt='-Wl,--as-needed,-O1,--sort-common -Wl,-z,relro -Wl,-z,now' \
     "
@@ -126,7 +126,7 @@ RUN set -ex \
 # Build freenginx.
     && curl -fsSL https://freenginx.org/download/freenginx-$NGX_VERSION.tar.gz | tar fxz - \
     && cd freenginx-$NGX_VERSION \
-    && eval ./configure $NGX_CONFIG_OPTIONS $NGX_ADD_CONFIG_OPTIONS $NGX_CONFIG_DEPS \
+    && eval ./configure $NGX_CONFIGURE_OPTIONS $NGX_ADD_MODULE_OPTIONS $NGX_TOOLCHAIN_OPTIONS \
     && make -j$(getconf _NPROCESSORS_ONLN) \
     && make install \
 ##############################

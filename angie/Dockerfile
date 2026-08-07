@@ -34,7 +34,7 @@ ENV NGX_ZSTD_VERSION=$NGX_ZSTD_VERSION
 # https://github.com/webserver-llc/angie/blob/master/auto/options
 # https://hg.angie.software/angie/file/e8ff538b1b72/auto/options
 # parameter order follows `./configure --help`.
-ARG ANGIE_BUILD_OPTIONS="\
+ARG ANGIE_CONFIGURE_OPTIONS="\
     --prefix=/etc/angie \
     --sbin-path=/usr/sbin/angie \
     --modules-path=/usr/lib/angie/modules \
@@ -84,15 +84,15 @@ ARG ANGIE_BUILD_OPTIONS="\
     --with-compat \
     "
 
-ARG ANGIE_BUILD_DEPS="\
-    --with-ld-opt='-Wl,--as-needed,-O1,--sort-common -Wl,-z,pack-relative-relocs' \
-    "
-
-ARG ANGIE_ADD_BUILD_OPTIONS="\
+ARG ANGIE_ADD_MODULE_OPTIONS="\
     --add-module=../ngx_brotli \
     --add-module=../ngx_http_geoip2_module-$NGX_GEOIP2_VERSION \
     --add-module=../headers-more-nginx-module-$HEADERS_MORE_VERSION \
     --add-module=../zstd-nginx-module \
+    "
+
+ARG ANGIE_TOOLCHAIN_OPTIONS="\
+    --with-ld-opt='-Wl,--as-needed,-O1,--sort-common -Wl,-z,pack-relative-relocs' \
     "
 
 ARG ANGIE_STRIP_BINARIES=
@@ -131,7 +131,7 @@ RUN set -ex \
 # Build angie.
     && curl -fsSL https://github.com/webserver-llc/angie/archive/Angie-$ANGIE_VERSION.tar.gz | tar xz --strip-components=1 --one-top-level="angie-$ANGIE_VERSION" \
     && cd angie-$ANGIE_VERSION \
-    && eval ./configure $ANGIE_BUILD_OPTIONS $ANGIE_BUILD_DEPS $ANGIE_ADD_BUILD_OPTIONS \
+    && eval ./configure $ANGIE_CONFIGURE_OPTIONS $ANGIE_ADD_MODULE_OPTIONS $ANGIE_TOOLCHAIN_OPTIONS \
     && make -j$(getconf _NPROCESSORS_ONLN) \
     && make install \
 ##############################
