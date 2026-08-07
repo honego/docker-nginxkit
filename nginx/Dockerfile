@@ -157,7 +157,7 @@ RUN set -ex \
 ##############################
 # resolve runtime shared library deps.
     && runDeps="$( \
-        scanelf --nobanner --recursive --format '%n#p' \
+        scanelf --recursive --nobanner --needed --format '%n#p' \
             /usr/sbin/nginx \
             /usr/lib/nginx/modules \
         | tr ',' '\n' \
