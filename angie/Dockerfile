@@ -69,6 +69,8 @@ ARG ANGIE_BUILD_OPTIONS="\
     --http-uwsgi-temp-path=/var/cache/angie/uwsgi_temp \
     --http-scgi-temp-path=/var/cache/angie/scgi_temp \
     --http-acme-client-path=/var/lib/angie/acme \
+    --with-mail \
+    --with-mail_ssl_module \
     --with-stream \
     --with-stream_ssl_module \
     --with-stream_acme_module \
