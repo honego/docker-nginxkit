@@ -31,6 +31,9 @@ ARG NGX_ZSTD_VERSION=
 ENV NGX_ZSTD_VERSION=$NGX_ZSTD_VERSION
 
 ## Build arguments.
+# https://github.com/webserver-llc/angie/blob/master/auto/options
+# https://hg.angie.software/angie/file/e8ff538b1b72/auto/options
+# parameter order follows `./configure --help`.
 ARG ANGIE_BUILD_OPTIONS="\
     --prefix=/etc/angie \
     --sbin-path=/usr/sbin/angie \
@@ -69,8 +72,8 @@ ARG ANGIE_BUILD_OPTIONS="\
     --http-uwsgi-temp-path=/var/cache/angie/uwsgi_temp \
     --http-scgi-temp-path=/var/cache/angie/scgi_temp \
     --http-acme-client-path=/var/lib/angie/acme \
-    --with-mail \
-    --with-mail_ssl_module \
+    `# --with-mail` \
+    `# --with-mail_ssl_module` \
     --with-stream \
     --with-stream_ssl_module \
     --with-stream_acme_module \
