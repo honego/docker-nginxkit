@@ -118,7 +118,7 @@ RUN set -ex \
     && git clone --depth=10 https://github.com/tokers/zstd-nginx-module.git \
 ##############################
 # Build nginx.
-    && curl -fsSL https://nginx.org/download/nginx-$NGX_VERSION.tar.gz | tar fxz - \
+    && curl -fsSL https://github.com/nginx/nginx/releases/download/release-$NGX_VERSION/nginx-$NGX_VERSION.tar.gz | tar fxz - \
     && cd nginx-$NGX_VERSION \
     && eval ./configure $NGX_CONFIGURE_OPTIONS $NGX_ADD_MODULE_OPTIONS $NGX_TOOLCHAIN_OPTIONS \
     && make -j$(getconf _NPROCESSORS_ONLN) \
