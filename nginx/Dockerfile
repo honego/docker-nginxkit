@@ -85,6 +85,8 @@ ARG NGX_TOOLCHAIN_OPTIONS="\
     --with-ld-opt='-Wl,--as-needed,-O1,--sort-common -Wl,-z,pack-relative-relocs' \
     "
 
+ARG NGX_STRIP_BINARIES=
+
 RUN set -ex \
     && addgroup -g 101 -S nginx \
     && adduser -S -D -H -u 101 -h /var/cache/nginx -s /sbin/nologin -G nginx -g nginx nginx \
@@ -139,6 +141,21 @@ RUN set -ex \
     && ln -sf /dev/stderr /var/log/nginx/error.log \
 # create a docker-entrypoint.d directory
     && mkdir /docker-entrypoint.d \
+##############################
+# strip installed ELF executables and shared objects.
+# https://gitlab.alpinelinux.org/alpine/abuild/-/blob/master/abuild.in
+    && if [ -n "$NGX_STRIP_BINARIES" ]; then \
+        scanelf --recursive --nobanner --osabi --etype 'ET_DYN,ET_EXEC' \
+            /usr/sbin/nginx \
+            /usr/lib/nginx/modules \
+        | while read -r type osabi filename; do \
+            [ -e "$filename" ] || continue; \
+            [ "$osabi" != "STANDALONE" ] || continue; \
+            strip --strip-unneeded "$filename" || exit 1; \
+        done; \
+    fi \
+##############################
+# resolve runtime shared library deps.
     && runDeps="$( \
         scanelf --nobanner --recursive --format '%n#p' \
             /usr/sbin/nginx \
