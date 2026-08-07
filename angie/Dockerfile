@@ -52,7 +52,7 @@ ARG ANGIE_BUILD_OPTIONS="\
     --with-http_addition_module \
     --with-http_sub_module \
     --with-http_dav_module \
-    `#--with-http_flv_module` \
+    `# --with-http_flv_module` \
     --with-http_mp4_module \
     --with-http_gunzip_module \
     --with-http_gzip_static_module \
@@ -98,13 +98,10 @@ RUN set -ex \
         build-base \
         git \
         libmaxminddb-dev \
-        lz4-dev \
         linux-headers \
         openssl-dev \
         pcre2-dev \
-        perl-dev \
         tar \
-        xz-dev \
         zlib-dev \
     && apk add --no-cache \
         curl \
@@ -132,6 +129,7 @@ RUN set -ex \
     && make install \
 ##############################
 # https://github.com/nginx/pkg-oss/blob/master/alpine/alpine/APKBUILD-base.in
+# `/var/lib/angie` ported from official container build parameters for storing acme certificates.
     && mkdir -p \
         /var/cache/angie \
         /var/lib/angie \
