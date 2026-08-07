@@ -20,6 +20,8 @@ ARG NGX_ADD_DYNAMIC_MODULE_OPTIONS="\
     --with-compat \
     "
 
+ARG NGX_STRIP_BINARIES=
+
 RUN set -ex \
     && apk add --no-cache --virtual .build-deps \
         build-base \
@@ -39,6 +41,9 @@ RUN set -ex \
     && cd nginx-$NGX_VERSION \
     && eval ./configure $NGX_ADD_DYNAMIC_MODULE_OPTIONS \
     && make -j$(getconf _NPROCESSORS_ONLN) \
+    && if [ -n "$NGX_STRIP_BINARIES" ]; then \
+        strip --strip-unneeded objs/*.so || exit 1; \
+    fi \
     && apk del --no-network .build-deps
 
 FROM base AS dist
