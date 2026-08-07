@@ -20,17 +20,11 @@ ARG NGX_VERSION=
 ENV NGX_VERSION=$NGX_VERSION
 
 ## third-party modules.
-# https://github.com/leev/ngx_http_geoip2_module
-ARG NGX_GEOIP2_VERSION=
-ENV NGX_GEOIP2_VERSION=$NGX_GEOIP2_VERSION
-
 # https://github.com/openresty/headers-more-nginx-module
 ARG HEADERS_MORE_VERSION=
-ENV HEADERS_MORE_VERSION=$HEADERS_MORE_VERSION
 
 # https://github.com/facebook/zstd
 ARG NGX_ZSTD_VERSION=
-ENV NGX_ZSTD_VERSION=$NGX_ZSTD_VERSION
 
 # https://github.com/nginx/pkg-oss/blob/master/alpine/Makefile
 # parameter order follows `./configure --help`.
@@ -53,6 +47,7 @@ ARG NGX_CONFIGURE_OPTIONS="\
     --with-http_v3_module \
     --with-http_realip_module \
     --with-http_addition_module \
+    --with-http_geoip_module \
     --with-http_sub_module \
     --with-http_dav_module \
     `# --with-http_flv_module` \
@@ -76,13 +71,13 @@ ARG NGX_CONFIGURE_OPTIONS="\
     --with-stream \
     --with-stream_ssl_module \
     --with-stream_realip_module \
+    --with-stream_geoip_module \
     --with-stream_ssl_preread_module \
     --with-compat \
     "
 
 ARG NGX_ADD_MODULE_OPTIONS="\
     --add-module=../ngx_brotli \
-    --add-module=../ngx_http_geoip2_module-$NGX_GEOIP2_VERSION \
     --add-module=../headers-more-nginx-module-$HEADERS_MORE_VERSION \
     --add-module=../zstd-nginx-module \
     "
@@ -114,7 +109,6 @@ RUN set -ex \
 ##############################
 # Install third-party modules.
     && git clone --recurse-submodules -j8 https://github.com/google/ngx_brotli \
-    && curl -fsSL https://github.com/leev/ngx_http_geoip2_module/archive/$NGX_GEOIP2_VERSION.tar.gz | tar fxz - \
     && curl -fsSL https://github.com/openresty/headers-more-nginx-module/archive/v$HEADERS_MORE_VERSION.tar.gz | tar fxz - \
     && curl -fsSL https://github.com/facebook/zstd/releases/download/v$NGX_ZSTD_VERSION/zstd-$NGX_ZSTD_VERSION.tar.gz | tar fxz - \
     && make -j$(getconf _NPROCESSORS_ONLN) -C zstd-$NGX_ZSTD_VERSION/lib \
@@ -148,8 +142,23 @@ RUN set -ex \
     && ln -sf /dev/stderr /var/log/nginx/error.log \
 # create a docker-entrypoint.d directory
     && mkdir /docker-entrypoint.d \
+##############################
+# strip installed ELF executables and shared objects.
+# https://gitlab.alpinelinux.org/alpine/abuild/-/blob/master/abuild.in
+    && if [ -n "$NGX_STRIP_BINARIES" ]; then \
+        scanelf --recursive --nobanner --osabi --etype 'ET_DYN,ET_EXEC' \
+            /usr/sbin/nginx \
+            /usr/lib/nginx/modules \
+        | while read -r type osabi filename; do \
+            [ -e "$filename" ] || continue; \
+            [ "$osabi" != "STANDALONE" ] || continue; \
+            strip --strip-unneeded "$filename" || exit 1; \
+        done; \
+    fi \
+##############################
+# resolve runtime shared library deps.
     && runDeps="$( \
-        scanelf --nobanner --recursive --format '%n#p' \
+        scanelf --recursive --nobanner --needed --format '%n#p' \
             /usr/sbin/nginx \
             /usr/lib/nginx/modules \
         | tr ',' '\n' \

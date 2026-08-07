@@ -7,11 +7,9 @@ FROM base AS build
 
 ## nginx version.
 ARG NGX_VERSION=
-ENV NGX_VERSION=$NGX_VERSION
 
 ## dynamic modules.
 ARG NGX_ACME_VERSION=
-ENV NGX_ACME_VERSION=$NGX_ACME_VERSION
 
 ARG NGX_ADD_DYNAMIC_MODULE_OPTIONS="\
     --with-http_ssl_module \
@@ -57,15 +55,12 @@ ENV NGX_VERSION=$NGX_VERSION
 ## third-party modules.
 # https://github.com/leev/ngx_http_geoip2_module
 ARG NGX_GEOIP2_VERSION=
-ENV NGX_GEOIP2_VERSION=$NGX_GEOIP2_VERSION
 
 # https://github.com/openresty/headers-more-nginx-module
 ARG HEADERS_MORE_VERSION=
-ENV HEADERS_MORE_VERSION=$HEADERS_MORE_VERSION
 
 # https://github.com/facebook/zstd
 ARG NGX_ZSTD_VERSION=
-ENV NGX_ZSTD_VERSION=$NGX_ZSTD_VERSION
 
 # https://github.com/nginx/pkg-oss/blob/master/alpine/Makefile
 # parameter order follows `./configure --help`.
