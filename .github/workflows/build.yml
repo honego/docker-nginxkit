@@ -1,0 +1,159 @@
+---
+name: "Buildbot"
+
+on:
+  push:
+    paths:
+      - "angie/**"
+      - "freenginx/**"
+      - "!**/*.md"
+  pull_request:
+    - "angie/**"
+    - "freenginx/**"
+    - "!**/*.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  changes:
+    name: "Detect changes"
+    runs-on: ubuntu-24.04
+    permissions:
+      pull-requests: read
+    outputs:
+      angie: ${{ steps.filter.outputs.angie }}
+      freenginx: ${{ steps.filter.outputs.freenginx }}
+
+    steps:
+      - name: "Checkout repository"
+        if: github.event_name != 'workflow_dispatch'
+        uses: actions/checkout@v7
+
+      - name: "Detect changed images"
+        if: github.event_name != 'workflow_dispatch'
+        id: filter
+        uses: dorny/paths-filter@v4
+        with:
+          filters: |
+            angie:
+              - "angie/**"
+              - "!**/*.md"
+            freenginx:
+              - "freenginx/**"
+              - "!**/*.md"
+          predicate-quantifier: some-with-excludes
+
+  build-angie:
+    name: "Build angie ${{ matrix.platform }}"
+    needs: changes
+    if: github.event_name == 'workflow_dispatch' || needs.changes.outputs.angie == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-24.04, platform: linux/amd64 }
+          - { os: ubuntu-24.04-arm, platform: linux/arm64 }
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 5
+    concurrency:
+      group: ${{ github.workflow }}-angie-${{ matrix.os }}-${{ github.ref }}
+      cancel-in-progress: true
+    env:
+      WORK_DIR: angie
+
+    steps:
+      - name: "Checkout repository"
+        uses: actions/checkout@v7
+
+      - name: "Resolve upstream versions"
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          echo "ANGIE_VERSION=$(gh api --paginate repos/webserver-llc/angie/tags --jq '.[].name' | sed -n 's/^Angie-//p' | sort -V | tail -n 1)" >> "$GITHUB_ENV"
+          . scripts/ci-deps.sh
+
+      - name: "Build angie"
+        working-directory: ${{ env.WORK_DIR }}
+        shell: bash
+        run: |
+          dpkg --print-architecture 2>/dev/null || uname -m
+
+          set -euxo pipefail
+          docker build \
+            --no-cache \
+            --progress=plain \
+            --platform ${{ matrix.platform }} \
+            --build-arg ANGIE_VERSION=${{ env.ANGIE_VERSION }} \
+            --build-arg NGX_GEOIP2_VERSION=${{ env.NGX_GEOIP2_VERSION }} \
+            --build-arg HEADERS_MORE_VERSION=${{ env.HEADERS_MORE_VERSION }} \
+            --build-arg NGX_ZSTD_VERSION=${{ env.NGX_ZSTD_VERSION }} \
+            --build-arg ANGIE_STRIP_BINARIES=1 \
+            --tag $GITHUB_REPOSITORY_OWNER/angie:${{ env.ANGIE_VERSION }}-$(dpkg --print-architecture) \
+            . 2>&1 | tee build.log
+
+          docker run --rm \
+            --entrypoint angie \
+            $GITHUB_REPOSITORY_OWNER/angie:${{ env.ANGIE_VERSION }}-$(dpkg --print-architecture) \
+            -V
+
+  build-freenginx:
+    name: "Build freenginx ${{ matrix.platform }}"
+    needs: changes
+    if: github.event_name == 'workflow_dispatch' || needs.changes.outputs.freenginx == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-24.04, platform: linux/amd64 }
+          - { os: ubuntu-24.04-arm, platform: linux/arm64 }
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 5
+    concurrency:
+      group: ${{ github.workflow }}-freenginx-${{ matrix.os }}-${{ github.ref }}
+      cancel-in-progress: true
+    env:
+      WORK_DIR: freenginx
+
+    steps:
+      - name: "Checkout repository"
+        uses: actions/checkout@v7
+
+      - name: "Resolve upstream versions"
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          echo "NGX_VERSION=$(gh api --paginate repos/freenginx/nginx/tags \
+            --jq '.[] | select(.name | test("^release-[0-9]+\\.[0-9]+\\.[0-9]+$")) | .name | sub("^release-"; "")' | sort -V | tail -n 1)" >> "$GITHUB_ENV"
+          . scripts/ci-deps.sh
+
+      - name: "Build freenginx"
+        working-directory: ${{ env.WORK_DIR }}
+        run: |
+          dpkg --print-architecture 2>/dev/null || uname -m
+
+          set -euxo pipefail
+          curl -fsSL -O https://github.com/nginx/pkg-oss/raw/master/alpine/alpine/nginx.conf
+          curl -fsSL -O https://github.com/nginx/pkg-oss/raw/master/alpine/alpine/nginx.default.conf
+          curl -fsSL -O https://github.com/nginx/docker-nginx/raw/master/entrypoint/docker-entrypoint.sh
+          curl -fsSL -O https://github.com/nginx/docker-nginx/raw/master/entrypoint/10-listen-on-ipv6-by-default.sh
+          curl -fsSL -O https://github.com/nginx/docker-nginx/raw/master/entrypoint/15-local-resolvers.envsh
+          curl -fsSL -O https://github.com/nginx/docker-nginx/raw/master/entrypoint/20-envsubst-on-templates.sh
+          curl -fsSL -O https://github.com/nginx/docker-nginx/raw/master/entrypoint/30-tune-worker-processes.sh
+
+          docker build \
+            --no-cache \
+            --progress=plain \
+            --platform ${{ matrix.platform }} \
+            --build-arg NGX_VERSION=${{ env.NGX_VERSION }} \
+            --build-arg HEADERS_MORE_VERSION=${{ env.HEADERS_MORE_VERSION }} \
+            --build-arg NGX_ZSTD_VERSION=${{ env.NGX_ZSTD_VERSION }} \
+            --build-arg NGX_STRIP_BINARIES=1 \
+            --tag $GITHUB_REPOSITORY_OWNER/freenginx:${{ env.NGX_VERSION }}-$(dpkg --print-architecture) \
+            . 2>&1 | tee build.log
+
+          docker run --rm \
+            --entrypoint freenginx \
+            $GITHUB_REPOSITORY_OWNER/freenginx:${{ env.NGX_VERSION }}-$(dpkg --print-architecture) \
+            -V
