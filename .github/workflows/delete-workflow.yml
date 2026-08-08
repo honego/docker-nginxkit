@@ -7,13 +7,15 @@ on:
   workflow_dispatch:
 
 permissions:
-  actions: write
   contents: read
 
 jobs:
   clean:
     name: "Delete old workflows"
     runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: read
 
     steps:
       - name: "Delete old workflows"
