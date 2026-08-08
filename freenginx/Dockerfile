@@ -2,6 +2,7 @@
 # Copyright (c) 2026 honeok <i@honeok.com>
 
 # Описание: freenginx проект, посвящённый свободной и открытой разработке nginx [engine x].
+# Началось в: https://freenginx.org/pipermail/nginx/2024-February/000000.html
 # Список литературы:
 # https://freenginx.org/en/docs/configure.html
 # https://github.com/nginx/docker-nginx
