@@ -8,9 +8,10 @@ on:
       - "freenginx/**"
       - "!**/*.md"
   pull_request:
-    - "angie/**"
-    - "freenginx/**"
-    - "!**/*.md"
+    paths:
+      - "angie/**"
+      - "freenginx/**"
+      - "!**/*.md"
   workflow_dispatch:
 
 permissions:
