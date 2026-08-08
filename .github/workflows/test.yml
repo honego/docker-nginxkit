@@ -1,5 +1,5 @@
 ---
-name: "Buildbot"
+name: "Build test"
 
 on:
   push:
@@ -48,7 +48,7 @@ jobs:
           predicate-quantifier: some-with-excludes
 
   build-angie:
-    name: "Build angie ${{ matrix.platform }}"
+    name: "Build angie"
     needs: changes
     if: github.event_name == 'workflow_dispatch' || needs.changes.outputs.angie == 'true'
     strategy:
@@ -101,7 +101,7 @@ jobs:
             -V
 
   build-freenginx:
-    name: "Build freenginx ${{ matrix.platform }}"
+    name: "Build freenginx"
     needs: changes
     if: github.event_name == 'workflow_dispatch' || needs.changes.outputs.freenginx == 'true'
     strategy:
