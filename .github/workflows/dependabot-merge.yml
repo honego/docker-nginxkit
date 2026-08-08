@@ -4,6 +4,9 @@ name: "Dependabot merge"
 on:
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   dependabot:
     name: "Dependabot merge"
