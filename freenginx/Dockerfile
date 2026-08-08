@@ -89,6 +89,8 @@ ARG NGX_TOOLCHAIN_OPTIONS="\
     --with-ld-opt='-Wl,--as-needed,-O1,--sort-common -Wl,-z,pack-relative-relocs' \
     "
 
+ARG NGX_STRIP_BINARIES=
+
 RUN set -ex \
     && addgroup -g 101 -S nginx \
     && adduser -S -D -H -u 101 -h /var/cache/nginx -s /sbin/nologin -G nginx -g nginx nginx \
