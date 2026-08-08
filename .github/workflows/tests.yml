@@ -1,5 +1,5 @@
 ---
-name: "Build test"
+name: "Build tests"
 
 on:
   push:
